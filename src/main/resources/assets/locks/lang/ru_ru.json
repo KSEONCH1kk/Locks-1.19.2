@@ -1,0 +1,54 @@
+{
+"language.locks.translation_author": "KSEONYT",
+
+"itemGroup.locks": "Замки",
+
+"item.locks.spring": "Пружина",
+"item.locks.wood_lock_mechanism": "Деревянный механизм замка",
+"item.locks.iron_lock_mechanism": "Железный механизм замка",
+"item.locks.steel_lock_mechanism": "Стальной механизм замка",
+"item.locks.wood_lock": "Деревянный замок",
+"item.locks.iron_lock": "Железный замок",
+"item.locks.steel_lock": "Стальной замок",
+"item.locks.gold_lock": "Позолоченный замок",
+"item.locks.diamond_lock": "Алмазный замок",
+"item.locks.netherite_lock": "Незеритовый замок",
+"item.locks.wood_lock_pick": "Шпилька для взлома",
+"item.locks.iron_lock_pick": "Железная отмычка",
+"item.locks.steel_lock_pick": "Стальная отмычка",
+"item.locks.gold_lock_pick": "Золотая отмычка",
+"item.locks.diamond_lock_pick": "Алмазная отмычка",
+"item.locks.netherite_lock_pick": "Незеритовая отмычка",
+"item.locks.key": "Ключ",
+"item.locks.master_key": "Мастер-ключ",
+"item.locks.key_blank": "Заготовка ключа",
+"item.locks.key_ring": "Связка ключей",
+
+"enchantment.locks.shocking": "Шокирующий",
+"enchantment.locks.shocking.desc": "Бьет током воров при неудачной попытке взлома",
+"enchantment.locks.sturdy": "Прочный",
+"enchantment.locks.sturdy.desc": "Снижает эффективность отмычек",
+"enchantment.locks.complexity": "Сложность",
+"enchantment.locks.complexity.desc": "Делает замок слишком сложным для взлома отмычками низкого уровня",
+
+"death.attack.locks.shock": "%1$s был поражен током при попытке взлома зачарованного замка",
+"death.attack.locks.shock.player": "%1$s был поражен током зачарованным замком, пытаясь одновременно взломать его и отбиваться от %2$s",
+
+"locks.gui.lockpicking.title": "Взлом замка",
+"locks.gui.lockpicking.open": "Нажмите `ESC` чтобы открыть",
+
+"locks.subtitle.key_ring": "Звон ключей",
+"locks.subtitle.lock.close": "Щелчок замка",
+"locks.subtitle.lock.open": "Поворот ключа в замке",
+"locks.subtitle.lock.rattle": "Дребезжание замка",
+"locks.subtitle.pin.fail": "Глухой щелчок штифта",
+"locks.subtitle.pin.match": "Легкий щелчок штифта",
+"locks.subtitle.shock": "Внезапный электрический разряд",
+
+"locks.tooltip.id": "ID: %s",
+"locks.tooltip.length": "Длина: %s",
+"locks.tooltip.strength": "Прочность: %s",
+
+"locks.status.locked": "Этот блок заперт",
+"locks.status.too_complex": "Этот замок слишком сложный для данной отмычки"
+}
