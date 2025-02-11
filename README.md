@@ -1,3 +1,5 @@
+![](https://i.imgur.com/cy19xrK.png)
+
 # Locks Mod for 1.19.2
 
 This is a port of the [Locks Mod](https://github.com/MCTeamPotato/Locks-Unofficial) from 1.20.1 to Minecraft 1.19.2.
