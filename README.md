@@ -1,8 +1,21 @@
-# [![](http://cf.way2muchnoise.eu/full_1128357_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/locks-unoffical) [![](http://cf.way2muchnoise.eu/versions/1128357.svg)](https://www.curseforge.com/minecraft/mc-mods/locks-unoffical)
-![](http://i.imgur.com/M8Np4IB.png)
+# Locks Mod for 1.19.2
 
-The source code for Locks, a small, but unique Minecraft mod that introduces flexible and universal locks which can be dynamically attached to multiple blocks of any kind, including other mods, a fun lock picking mechanic as well as lots of other little, but useful tools and utilities.
+This is a port of the [Locks Mod](https://github.com/MCTeamPotato/Locks-Unofficial) from 1.20.1 to Minecraft 1.19.2.
 
-## Links
-CurseForge: https://www.curseforge.com/minecraft/mc-mods/locks-unoffical  
+## Changes from original mod
 
+- Updated to work with Minecraft 1.19.2 and Forge API
+- Rewrote mixin and rendering code for compatibility
+- Upgraded item/block registration system
+- Adapted networking code to match 1.19.2 standards
+
+## Dependencies
+
+- Minecraft 1.19.2
+- Forge 43.4.0+
+
+## Credits
+
+Original mod by MelonSlise
+
+Port maintained by KSEONYT
