@@ -2,12 +2,14 @@ package melonslise.locks.client.event;
 
 import java.util.List;
 
+import com.mojang.blaze3d.platform.Window;
 import melonslise.locks.common.config.LocksClientConfig;
 
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -97,46 +99,98 @@ public final class LocksClientForgeEvents {
         tooltipLockable = null;
     }
 
-    public static void renderLocks(PoseStack mtx, MultiBufferSource.BufferSource buf, Frustum ch, float pt) {
-        Minecraft mc = Minecraft.getInstance();
-        Vec3 o = LocksClientUtil.getCamera().getPosition();
-        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos();
+//    public static void renderLocks(PoseStack mtx, MultiBufferSource.BufferSource buf, Frustum ch, float pt) {
+//        Minecraft mc = Minecraft.getInstance();
+//        Vec3 o = LocksClientUtil.getCamera().getPosition();
+//        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos();
+//
+//        double dMin = 0d;
+//
+//        for(Lockable lkb : mc.level.getCapability(LocksCapabilities.LOCKABLE_HANDLER).orElse(null).getLoaded().values()) {
+//            Lockable.State state = lkb.getLockState(mc.level);
+//            if(state == null || !state.inRange(o) || !state.inView(ch))
+//                continue;
+//
+//            double d = o.subtract(state.pos).lengthSqr();
+//            if(d <= 25d) {
+//                Vec3 look = o.add(mc.player.getViewVector(pt));
+//                double d1 = LocksClientUtil.distanceToLineSq(state.pos, o, look);
+//                if(d1 <= 4d && (dMin == 0d || d1 < dMin)) {
+//                    tooltipLockable = lkb;
+//                    dMin = d1;
+//                }
+//            }
+//
+//            mtx.pushPose();
+//            // For some reason translating by negative player position and then the point coords causes jittering in very big z and x coords. Why? Thus we use 1 translation instead
+//            mtx.translate(state.pos.x - o.x, state.pos.y - o.y, state.pos.z - o.z);
+//            // FIXME 3 FUCKING QUATS PER FRAME !!! WHAT THE FUUUUUUCK!!!!!!!!!!!
+//            mtx.mulPose(Quaternion.fromXYZ(0f, (-state.tr.dir.toYRot() - 180f), 0f));
+//            if(state.tr.face != AttachFace.WALL)
+//                mtx.mulPose(Quaternion.fromXYZ(1f, 0f, 0f));
+//            mtx.translate(0d, 0.1d, 0d);
+//            mtx.mulPose(Quaternion.fromXYZ(0f, 0f, Mth.sin(LocksClientUtil.cubicBezier1d(1f, 1f, LocksClientUtil.lerp(lkb.maxSwingTicks - lkb.oldSwingTicks, lkb.maxSwingTicks - lkb.swingTicks, pt) / lkb.maxSwingTicks) * lkb.maxSwingTicks / 5f * 3.14f) * 10f));
+//            mtx.translate(0d, -0.1d, 0d);
+//            mtx.scale(0.5f, 0.5f, 0.5f);
+//            int light = LevelRenderer.getLightColor(mc.level, mut.set(state.pos.x, state.pos.y, state.pos.z));
+//            mc.getItemRenderer().renderStatic(lkb.stack, ItemTransforms.TransformType.FIXED, light, OverlayTexture.NO_OVERLAY, mtx, buf, 0);
+//            mtx.popPose();
+//        }
+//        buf.endBatch();
+//    }
+public static void renderLocks(PoseStack mtx, MultiBufferSource.BufferSource buf, Frustum ch, float pt) {
+    Minecraft mc = Minecraft.getInstance();
+    Vec3 o = LocksClientUtil.getCamera().getPosition();
+    BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos();
 
-        double dMin = 0d;
+    double dMin = 0d;
 
-        for(Lockable lkb : mc.level.getCapability(LocksCapabilities.LOCKABLE_HANDLER).orElse(null).getLoaded().values()) {
-            Lockable.State state = lkb.getLockState(mc.level);
-            if(state == null || !state.inRange(o) || !state.inView(ch))
-                continue;
+    for(Lockable lkb : mc.level.getCapability(LocksCapabilities.LOCKABLE_HANDLER).orElse(null).getLoaded().values()) {
+        Lockable.State state = lkb.getLockState(mc.level);
+        if(state == null || !state.inRange(o) || !state.inView(ch))
+            continue;
 
-            double d = o.subtract(state.pos).lengthSqr();
-            if(d <= 25d) {
-                Vec3 look = o.add(mc.player.getViewVector(pt));
-                double d1 = LocksClientUtil.distanceToLineSq(state.pos, o, look);
-                if(d1 <= 4d && (dMin == 0d || d1 < dMin)) {
-                    tooltipLockable = lkb;
-                    dMin = d1;
-                }
+        double d = o.subtract(state.pos).lengthSqr();
+        if(d <= 25d) {
+            Vec3 look = o.add(mc.player.getViewVector(pt));
+            double d1 = LocksClientUtil.distanceToLineSq(state.pos, o, look);
+            if(d1 <= 4d && (dMin == 0d || d1 < dMin)) {
+                tooltipLockable = lkb;
+                dMin = d1;
             }
-
-            mtx.pushPose();
-            // For some reason translating by negative player position and then the point coords causes jittering in very big z and x coords. Why? Thus we use 1 translation instead
-            mtx.translate(state.pos.x - o.x, state.pos.y - o.y, state.pos.z - o.z);
-            // FIXME 3 FUCKING QUATS PER FRAME !!! WHAT THE FUUUUUUCK!!!!!!!!!!!
-            mtx.mulPose(Quaternion.fromXYZ(0f, (-state.tr.dir.toYRot() - 180f), 0f));
-            if(state.tr.face != AttachFace.WALL)
-                mtx.mulPose(Quaternion.fromXYZ(1f, 0f, 0f));
-            mtx.translate(0d, 0.1d, 0d);
-            mtx.mulPose(Quaternion.fromXYZ(0f, 0f, Mth.sin(LocksClientUtil.cubicBezier1d(1f, 1f, LocksClientUtil.lerp(lkb.maxSwingTicks - lkb.oldSwingTicks, lkb.maxSwingTicks - lkb.swingTicks, pt) / lkb.maxSwingTicks) * lkb.maxSwingTicks / 5f * 3.14f) * 10f));
-            mtx.translate(0d, -0.1d, 0d);
-            mtx.scale(0.5f, 0.5f, 0.5f);
-            int light = LevelRenderer.getLightColor(mc.level, mut.set(state.pos.x, state.pos.y, state.pos.z));
-            mc.getItemRenderer().renderStatic(lkb.stack, ItemTransforms.TransformType.FIXED, light, OverlayTexture.NO_OVERLAY, mtx, buf, 0);
-            mtx.popPose();
         }
-        buf.endBatch();
-    }
 
+        mtx.pushPose();
+        mtx.translate(state.pos.x - o.x, state.pos.y - o.y, state.pos.z - o.z);
+
+        float yRot = -state.tr.dir.toYRot() * ((float)Math.PI / 180F);
+        mtx.mulPose(Vector3f.YP.rotation(yRot));
+        if(state.tr.face != AttachFace.WALL) {
+            mtx.mulPose(Vector3f.XP.rotationDegrees(90f));
+        }
+
+
+        float swingProgress = LocksClientUtil.lerp(lkb.maxSwingTicks - lkb.oldSwingTicks,
+                lkb.maxSwingTicks - lkb.swingTicks,
+                pt) / lkb.maxSwingTicks;
+
+
+        float swingAngle = (float) Math.pow(Math.sin(swingProgress * Math.PI * 2), 3) * 15f;
+
+
+        float dampingFactor = 1.0f - (swingProgress * 0.3f);
+        swingAngle *= dampingFactor;
+
+        mtx.mulPose(Vector3f.ZP.rotationDegrees(swingAngle));
+
+        mtx.scale(0.5f, 0.5f, 0.5f);
+
+        int light = LevelRenderer.getLightColor(mc.level, mut.set(state.pos.x, state.pos.y, state.pos.z));
+        mc.getItemRenderer().renderStatic(lkb.stack, ItemTransforms.TransformType.FIXED, light, OverlayTexture.NO_OVERLAY, mtx, buf, 0);
+        mtx.popPose();
+    }
+    buf.endBatch();
+}
     public static void renderSelection(PoseStack mtx, MultiBufferSource.BufferSource buf) {
         Minecraft mc = Minecraft.getInstance();
         Vec3 o = LocksClientUtil.getCamera().getPosition();
@@ -158,6 +212,12 @@ public final class LocksClientForgeEvents {
     public static void renderHudTooltip(PoseStack mtx, List<? extends FormattedCharSequence> lines, Font font) {
         if (lines.isEmpty())
             return;
+        float partialTicks = Minecraft.getInstance().getFrameTime();
+        Window window = Minecraft.getInstance().getWindow();
+        double fov = Minecraft.getInstance().gameRenderer.getFov(Minecraft.getInstance().gameRenderer.getMainCamera(), partialTicks, true);
+        float screenX = window.getGuiScaledWidth() / 2f;
+        float screenY = window.getGuiScaledHeight() / 2f;
+
         int width = 0;
         for (FormattedCharSequence line : lines) {
             int j = font.width(line);
@@ -172,13 +232,51 @@ public final class LocksClientForgeEvents {
             height += 2 + (lines.size() - 1) * 10;
 
         mtx.pushPose();
+        com.mojang.blaze3d.vertex.BufferBuilder lineBuf = Tesselator.getInstance().getBuilder();
+        lineBuf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
+        float tooltipCenterX = x + width / 2;
+        float tooltipCenterY = y + height / 2;
+
+        LocksClientUtil.line(lineBuf, mtx,
+                tooltipCenterX, tooltipCenterY,
+                screenX, screenY,
+                2f,
+                0.3f, 0f, 1f, 0.5f
+        );
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        BufferUploader.draw(lineBuf.end());
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        Matrix4f matrix = mtx.last().pose();
+        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+
+        int backgroundColor = 0xF0100010;
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        fillRect(bufferbuilder, matrix, x - 3, y - 4, x + width + 3, y + height + 4, 400, backgroundColor);
+        BufferUploader.drawWithShader(bufferbuilder.end());
+
+
+        int borderColorStart = 0x505000FF;
+        int borderColorEnd = (borderColorStart & 0xFEFEFE) >> 1 | borderColorStart & 0xFF000000;
+
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        fillGradientRect(bufferbuilder, matrix, x - 3, y - 3 + 1, x - 3 + 1, y + height + 3 - 1, 400, borderColorStart, borderColorEnd);
+        fillGradientRect(bufferbuilder, matrix, x + width + 2, y - 3 + 1, x + width + 3, y + height + 3 - 1, 400, borderColorStart, borderColorEnd);
+        fillGradientRect(bufferbuilder, matrix, x - 3, y - 3, x + width + 3, y - 3 + 1, 400, borderColorStart, borderColorStart);
+        fillGradientRect(bufferbuilder, matrix, x - 3, y + height + 2, x + width + 3, y + height + 3, 400, borderColorEnd, borderColorEnd);
+        BufferUploader.drawWithShader(bufferbuilder.end());
         com.mojang.blaze3d.vertex.BufferBuilder buf = Tesselator.getInstance().getBuilder();
         buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         LocksClientUtil.square(buf, mtx, 0f, 0f, 4f, 0.05f, 0f, 0.3f, 0.8f);
         LocksClientUtil.line(buf, mtx, 1f, -1f, x / 3f + 0.6f, y / 2f, 2f, 0.05f, 0f, 0.3f, 0.8f);
         LocksClientUtil.line(buf, mtx, x / 3f, y / 2f, x - 3f, y / 2f, 2f, 0.05f, 0f, 0.3f, 0.8f);
-        // line(buf, last, 1f, -1f, x - 3f, y / 2f, 2f, 0.05f, 0f, 0.3f, 0.8f);
         LocksClientUtil.vGradient(buf, mtx, x - 3, y - 4, x + width + 3, y - 3, 0.0627451f, 0f, 0.0627451f, 0.9411765f, 0.0627451f, 0f, 0.0627451f, 0.9411765f);
         LocksClientUtil.vGradient(buf, mtx, x - 3, y + height + 3, x + width + 3, y + height + 4, 0.0627451f, 0f, 0.0627451f, 0.9411765f, 0.0627451f, 0f, 0.0627451f, 0.9411765f);
         LocksClientUtil.vGradient(buf, mtx, x - 3, y - 3, x + width + 3, y + height + 3, 0.0627451f, 0f, 0.0627451f, 0.9411765f, 0.0627451f, 0f, 0.0627451f, 0.9411765f);
@@ -214,5 +312,30 @@ public final class LocksClientForgeEvents {
         buf1.endBatch();
 
         mtx.popPose();
+    }
+    private static void fillRect(BufferBuilder buffer, Matrix4f matrix, int x1, int y1, int x2, int y2, int z, int color) {
+        float a = (float)(color >> 24 & 255) / 255.0F;
+        float r = (float)(color >> 16 & 255) / 255.0F;
+        float g = (float)(color >> 8 & 255) / 255.0F;
+        float b = (float)(color & 255) / 255.0F;
+        buffer.vertex(matrix, (float)x1, (float)y2, (float)z).color(r, g, b, a).endVertex();
+        buffer.vertex(matrix, (float)x2, (float)y2, (float)z).color(r, g, b, a).endVertex();
+        buffer.vertex(matrix, (float)x2, (float)y1, (float)z).color(r, g, b, a).endVertex();
+        buffer.vertex(matrix, (float)x1, (float)y1, (float)z).color(r, g, b, a).endVertex();
+    }
+
+    private static void fillGradientRect(BufferBuilder buffer, Matrix4f matrix, int x1, int y1, int x2, int y2, int z, int colorStart, int colorEnd) {
+        float a1 = (float)(colorStart >> 24 & 255) / 255.0F;
+        float r1 = (float)(colorStart >> 16 & 255) / 255.0F;
+        float g1 = (float)(colorStart >> 8 & 255) / 255.0F;
+        float b1 = (float)(colorStart & 255) / 255.0F;
+        float a2 = (float)(colorEnd >> 24 & 255) / 255.0F;
+        float r2 = (float)(colorEnd >> 16 & 255) / 255.0F;
+        float g2 = (float)(colorEnd >> 8 & 255) / 255.0F;
+        float b2 = (float)(colorEnd & 255) / 255.0F;
+        buffer.vertex(matrix, (float)x2, (float)y1, (float)z).color(r1, g1, b1, a1).endVertex();
+        buffer.vertex(matrix, (float)x1, (float)y1, (float)z).color(r1, g1, b1, a1).endVertex();
+        buffer.vertex(matrix, (float)x1, (float)y2, (float)z).color(r2, g2, b2, a2).endVertex();
+        buffer.vertex(matrix, (float)x2, (float)y2, (float)z).color(r2, g2, b2, a2).endVertex();
     }
 }
