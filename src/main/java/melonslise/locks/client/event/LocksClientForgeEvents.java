@@ -17,8 +17,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -140,59 +138,6 @@ public final class LocksClientForgeEvents {
 //        }
 //        buf.endBatch();
 //    }
-//public static void renderLocks(PoseStack mtx, MultiBufferSource.BufferSource buf, Frustum ch, float pt) {
-//    Minecraft mc = Minecraft.getInstance();
-//    Vec3 o = LocksClientUtil.getCamera().getPosition();
-//    BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos();
-//
-//    double dMin = 0d;
-//
-//    for(Lockable lkb : mc.level.getCapability(LocksCapabilities.LOCKABLE_HANDLER).orElse(null).getLoaded().values()) {
-//        Lockable.State state = lkb.getLockState(mc.level);
-//        if(state == null || !state.inRange(o) || !state.inView(ch))
-//            continue;
-//
-//        double d = o.subtract(state.pos).lengthSqr();
-//        if(d <= 25d) {
-//            Vec3 look = o.add(mc.player.getViewVector(pt));
-//            double d1 = LocksClientUtil.distanceToLineSq(state.pos, o, look);
-//            if(d1 <= 4d && (dMin == 0d || d1 < dMin)) {
-//                tooltipLockable = lkb;
-//                dMin = d1;
-//            }
-//        }
-//
-//        mtx.pushPose();
-//        mtx.translate(state.pos.x - o.x, state.pos.y - o.y, state.pos.z - o.z);
-//
-//        float yRot = -state.tr.dir.toYRot() * ((float)Math.PI / 180F);
-//        mtx.mulPose(Vector3f.YP.rotation(yRot));
-//        if(state.tr.face != AttachFace.WALL) {
-//            mtx.mulPose(Vector3f.XP.rotationDegrees(90f));
-//        }
-//
-//
-//        float swingProgress = LocksClientUtil.lerp(lkb.maxSwingTicks - lkb.oldSwingTicks,
-//                lkb.maxSwingTicks - lkb.swingTicks,
-//                pt) / lkb.maxSwingTicks;
-//
-//
-//        float swingAngle = (float) Math.pow(Math.sin(swingProgress * Math.PI * 2), 3) * 15f;
-//
-//
-//        float dampingFactor = 1.0f - (swingProgress * 0.3f);
-//        swingAngle *= dampingFactor;
-//
-//        mtx.mulPose(Vector3f.ZP.rotationDegrees(swingAngle));
-//
-//        mtx.scale(0.5f, 0.5f, 0.5f);
-//
-//        int light = LevelRenderer.getLightColor(mc.level, mut.set(state.pos.x, state.pos.y, state.pos.z));
-//        mc.getItemRenderer().renderStatic(lkb.stack, ItemTransforms.TransformType.FIXED, light, OverlayTexture.NO_OVERLAY, mtx, buf, 0);
-//        mtx.popPose();
-//    }
-//    buf.endBatch();
-//}
 public static void renderLocks(PoseStack mtx, MultiBufferSource.BufferSource buf, Frustum ch, float pt) {
     Minecraft mc = Minecraft.getInstance();
     Vec3 o = LocksClientUtil.getCamera().getPosition();
@@ -216,41 +161,27 @@ public static void renderLocks(PoseStack mtx, MultiBufferSource.BufferSource buf
         }
 
         mtx.pushPose();
-
-        Block block = mc.level.getBlockState(new BlockPos(state.pos)).getBlock();
-        boolean isChest = block instanceof ChestBlock;
-
-        // Базовое перемещение
         mtx.translate(state.pos.x - o.x, state.pos.y - o.y, state.pos.z - o.z);
 
-        if(isChest) {
-            // Для сундука - смещаем в центр блока и поднимаем вверх
-            mtx.translate(0.5, 0.9, 0.5);
-
-            // Вращение и парение
-            float rotationAngle = (mc.level.getGameTime() + pt) * 2;
-            mtx.mulPose(Vector3f.YP.rotationDegrees(rotationAngle));
-
-            float hoverOffset = Mth.sin((mc.level.getGameTime() + pt) / 10.0f) * 0.1f;
-            mtx.translate(0, hoverOffset, 0);
-        } else {
-            // Для дверей - стандартное позиционирование
-            float yRot = -state.tr.dir.toYRot() * ((float)Math.PI / 180F);
-            mtx.mulPose(Vector3f.YP.rotation(yRot));
-
-            if(state.tr.face != AttachFace.WALL) {
-                mtx.mulPose(Vector3f.XP.rotationDegrees(90f));
-            }
-
-            float swingProgress = LocksClientUtil.lerp(lkb.maxSwingTicks - lkb.oldSwingTicks,
-                    lkb.maxSwingTicks - lkb.swingTicks,
-                    pt) / lkb.maxSwingTicks;
-
-            float swingAngle = (float) Math.pow(Math.sin(swingProgress * Math.PI * 2), 3) * 15f;
-            float dampingFactor = 1.0f - (swingProgress * 0.3f);
-            swingAngle *= dampingFactor;
-            mtx.mulPose(Vector3f.ZP.rotationDegrees(swingAngle));
+        float yRot = -state.tr.dir.toYRot() * ((float)Math.PI / 180F);
+        mtx.mulPose(Vector3f.YP.rotation(yRot));
+        if(state.tr.face != AttachFace.WALL) {
+            mtx.mulPose(Vector3f.XP.rotationDegrees(90f));
         }
+
+
+        float swingProgress = LocksClientUtil.lerp(lkb.maxSwingTicks - lkb.oldSwingTicks,
+                lkb.maxSwingTicks - lkb.swingTicks,
+                pt) / lkb.maxSwingTicks;
+
+
+        float swingAngle = (float) Math.pow(Math.sin(swingProgress * Math.PI * 2), 3) * 15f;
+
+
+        float dampingFactor = 1.0f - (swingProgress * 0.3f);
+        swingAngle *= dampingFactor;
+
+        mtx.mulPose(Vector3f.ZP.rotationDegrees(swingAngle));
 
         mtx.scale(0.5f, 0.5f, 0.5f);
 

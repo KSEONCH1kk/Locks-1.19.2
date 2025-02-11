@@ -55,7 +55,7 @@ public final class LocksCommonConfig {
         GENERATED_LOCK_WEIGHTS = cfg
                 .comment("WARNING: THE AMOUNT OF NUMBERS SHOULD BE EQUAL TO THE AMOUNT OF GENERATED LOCK ITEMS!!!", "The relative probability that the corresponding lock item will be generated on a chest. Higher number = higher chance to generate")
                 .comment("警告：数字的数量应与生成的锁数量相等！！！", "对应锁物品生成在箱子上的相对概率。数字越大，生成的机会越高。")
-                .defineList("Generated Lock Chances", Lists.newArrayList(5, 4, 2, 3, 1), e -> e instanceof Integer);
+                .defineList("Generated Lock Chances", Lists.newArrayList(6,5, 4, 2, 3, 1), e -> e instanceof Integer);
         RANDOMIZE_LOADED_LOCKS = cfg
                 .comment("Randomize lock IDs and combinations when loading them from a structure file. Randomization works just like during world generation")
                 .comment("从结构文件加载锁ID和组合时进行随机化。随机化的方式与世界生成时相同。")
@@ -74,7 +74,11 @@ public final class LocksCommonConfig {
         lockableGenBlocks = GEN_LOCKABLE_BLOCKS.get().stream().map(Pattern::compile).toArray(Pattern[]::new);
         List<? extends String> locks = GENERATED_LOCKS.get();
         List<? extends Integer> weights = GENERATED_LOCK_WEIGHTS.get();
-        for (int a = 0; a < locks.size(); ++a) {
+
+
+        int size = Math.min(locks.size(), weights.size());
+
+        for (int a = 0; a < size; ++a) {
             weightTotal += weights.get(a);
             weightedGeneratedLocks.put(weightTotal, ForgeRegistries.ITEMS.getValue(new ResourceLocation(locks.get(a))));
         }

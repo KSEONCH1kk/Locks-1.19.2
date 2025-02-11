@@ -52,7 +52,7 @@ public final class LocksItems {
     public static final RegistryObject<Item> STEEL_LOCK_PICK = ITEMS.register("steel_lock_pick", () -> new LockPickItem(0.7f,  new Item.Properties().tab(TAB)));
     public static final RegistryObject<Item> GOLD_LOCK_PICK = ITEMS.register("gold_lock_pick", () -> new LockPickItem(0.25f, new Item.Properties().tab(TAB)));
     public static final RegistryObject<Item> DIAMOND_LOCK_PICK = ITEMS.register("diamond_lock_pick", () -> new LockPickItem(0.85f,  new Item.Properties().tab(TAB)));
-    public static final RegistryObject<Item> NETHERITE_LOCK_PICK = ITEMS.register("netherite_lock_pick", () -> new LockPickItem(0.95f,  new Item.Properties().tab(TAB)));
+    public static final RegistryObject<Item> NETHERITE_LOCK_PICK = ITEMS.register("netherite_lock_pick", () -> new LockPickItem(1f,  new Item.Properties().tab(TAB)));
 
     private LocksItems() {}
 

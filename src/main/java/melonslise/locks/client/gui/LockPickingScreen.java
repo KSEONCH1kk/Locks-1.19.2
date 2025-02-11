@@ -66,6 +66,11 @@ public class LockPickingScreen extends AbstractContainerScreen<LockPickingContai
 
     public final int length;
     public final boolean pins[];
+    private boolean isDraggingPick = false;
+    private float pickAngle = 0f;
+    private float tension = 0f;
+    private float maxTension = 10f;
+    private float breakChance = 0f;
     public final InteractionHand hand;
 
     protected int currPin;
@@ -121,6 +126,17 @@ public class LockPickingScreen extends AbstractContainerScreen<LockPickingContai
     protected void init() {
         super.init();
     }
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Add realistic interaction on left click
+        if (button == 0 && !this.lockPick.isExecuting() && this.pullPin(this.getSelectedPin())) {
+            // Try to lift a pin based on current pick position and angle
+            this.lockPick.execute(MoveAction.at(0f, -2.5f).time(3), MoveAction.at(0f, 2.5f).time(3));
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
 
     @Override
     protected void renderBg(PoseStack guiGraphics, float partialTick, int mouseX, int mouseY) {
@@ -128,6 +144,18 @@ public class LockPickingScreen extends AbstractContainerScreen<LockPickingContai
         int cornerX = (this.width - this.imageWidth) / 2;
         int cornerY = (this.height - this.imageHeight) / 2;
 
+        if (!this.frozen) {
+
+            // Adjust lockpick position relative to the lock
+            float newPosX = (float)(mouseX - cornerX) / 2f - 10;
+            newPosX = Mth.clamp(newPosX, -22 - LOCK_PICK_TEX.width, (this.length - 1) * (COLUMN_TEX.width + INNER_WALL_TEX.width));
+
+            // Track delta for tension and angle
+            float deltaX = newPosX - this.lockPick.posX;
+            float deltaY = (float)(mouseY - cornerY) - this.lockPick.posY;
+
+            this.lockPick.posX = newPosX;
+        }
         //this.minecraft.getTextureManager().bindForSetup(this.lockTex);
         PoseStack mtx = guiGraphics;
         mtx.pushPose();
@@ -193,12 +221,6 @@ public class LockPickingScreen extends AbstractContainerScreen<LockPickingContai
         if (this.frozen)
             return super.keyPressed(key, scan, modifier);
         ;
-        if (key == this.minecraft.options.keyLeft.getKey().getValue())
-            this.lockPick.speedX = -4;
-        else if (key == this.minecraft.options.keyRight.getKey().getValue())
-            this.lockPick.speedX = 4;
-        else if (key == this.minecraft.options.keyUp.getKey().getValue() && !this.lockPick.isExecuting() && this.pullPin(this.getSelectedPin()))
-            this.lockPick.execute(MoveAction.at(0f, -2.5f).time(3), MoveAction.at(0f, 2.5f).time(3));
         return super.keyPressed(key, scan, modifier);
     }
 
@@ -206,8 +228,6 @@ public class LockPickingScreen extends AbstractContainerScreen<LockPickingContai
     public boolean keyReleased(int key, int scan, int modifier) {
         if (this.frozen)
             return super.keyReleased(key, scan, modifier);
-        if (key == this.minecraft.options.keyLeft.getKey().getValue() || key == this.minecraft.options.keyRight.getKey().getValue())
-            this.lockPick.speedX = 0;
         return super.keyReleased(key, scan, modifier);
     }
 
@@ -216,21 +236,42 @@ public class LockPickingScreen extends AbstractContainerScreen<LockPickingContai
     }
 
     protected boolean pullPin(int pin) {
-        if (this.pins[pin])
-            return false;
-        this.currPin = pin;
-        LocksNetwork.MAIN.sendToServer(new TryPinPacket((byte) pin));
-        return true;
+        try {
+            if (this.pins[pin])
+                return false;
+            this.currPin = pin;
+            LocksNetwork.MAIN.sendToServer(new TryPinPacket((byte) pin));
+            return true;
+        } catch (Exception e) {return false; }
+    }
+
+    private float calculatePinLiftChance(int pin) {
+        // Base chance modified by pick angle and tension
+        float baseChance = 0.5f;
+        float angleFactor = 1f - Math.abs(pickAngle) / 45f;
+        float tensionFactor = 1f - (tension / maxTension);
+
+        return baseChance * angleFactor * tensionFactor;
     }
 
     public void handlePin(boolean correct, boolean reset) {
+        // Similar to original implementation, but incorporate tension and angle
         this.pinTumblers[this.currPin].execute(MoveAction.at(0f, -6f).time(2), MoveAction.at(0f, 6f).time(2));
         this.upperPins[this.currPin].execute(MoveAction.at(0f, -6f).time(2));
+
         if (correct) {
             this.pins[this.currPin] = true;
             this.upperPins[this.currPin].execute(MoveAction.to(this.upperPins[this.currPin], this.upperPins[this.currPin].posX, 29, 2));
-        } else
+
+            // Reduce tension when a pin is successfully lifted
+            this.tension *= 0.5f;
+        } else {
             this.upperPins[this.currPin].execute(MoveAction.at(0f, 6f).time(2));
+
+            // Increase tension on failed pin lift
+            this.tension += 2f;
+        }
+
         if (reset) {
             this.resetSpeed();
             this.reset();
@@ -238,12 +279,16 @@ public class LockPickingScreen extends AbstractContainerScreen<LockPickingContai
     }
 
     public void reset() {
-        //this.lockPick.reset();
         for (int a = 0; a < this.pins.length; ++a)
             if (this.pins[a]) {
                 this.pins[a] = false;
                 this.upperPins[a].execute(MoveAction.to(this.upperPins[a], this.upperPins[a].posX, this.pinTumblers[a].posY - UPPER_PIN_TEX.height, 2));
             }
+
+        // Reset tension and break chance
+        this.tension = 0f;
+        this.breakChance = 0f;
+
         this.lockPick.alpha(0f);
         this.rightPickPart.alpha(1f).execute(WaitAction.ticks(10), FadeAction.to(this.rightPickPart, 0f, 4));
         this.leftPickPart.alpha(1f).execute(WaitAction.ticks(10), FadeAction.to(this.rightPickPart, 0f, 4).then(resetPickCb));
@@ -263,3 +308,4 @@ public class LockPickingScreen extends AbstractContainerScreen<LockPickingContai
         }
     }
 }
+
