@@ -216,41 +216,27 @@ public static void renderLocks(PoseStack mtx, MultiBufferSource.BufferSource buf
         }
 
         mtx.pushPose();
-
-        Block block = mc.level.getBlockState(new BlockPos(state.pos)).getBlock();
-        boolean isChest = block instanceof ChestBlock;
-
-        // Базовое перемещение
         mtx.translate(state.pos.x - o.x, state.pos.y - o.y, state.pos.z - o.z);
 
-        if(isChest) {
-            // Для сундука - смещаем в центр блока и поднимаем вверх
-            mtx.translate(0.5, 0.9, 0.5);
-
-            // Вращение и парение
-            float rotationAngle = (mc.level.getGameTime() + pt) * 2;
-            mtx.mulPose(Vector3f.YP.rotationDegrees(rotationAngle));
-
-            float hoverOffset = Mth.sin((mc.level.getGameTime() + pt) / 10.0f) * 0.1f;
-            mtx.translate(0, hoverOffset, 0);
-        } else {
-            // Для дверей - стандартное позиционирование
-            float yRot = -state.tr.dir.toYRot() * ((float)Math.PI / 180F);
-            mtx.mulPose(Vector3f.YP.rotation(yRot));
-
-            if(state.tr.face != AttachFace.WALL) {
-                mtx.mulPose(Vector3f.XP.rotationDegrees(90f));
-            }
-
-            float swingProgress = LocksClientUtil.lerp(lkb.maxSwingTicks - lkb.oldSwingTicks,
-                    lkb.maxSwingTicks - lkb.swingTicks,
-                    pt) / lkb.maxSwingTicks;
-
-            float swingAngle = (float) Math.pow(Math.sin(swingProgress * Math.PI * 2), 3) * 15f;
-            float dampingFactor = 1.0f - (swingProgress * 0.3f);
-            swingAngle *= dampingFactor;
-            mtx.mulPose(Vector3f.ZP.rotationDegrees(swingAngle));
+        float yRot = -state.tr.dir.toYRot() * ((float)Math.PI / 180F);
+        mtx.mulPose(Vector3f.YP.rotation(yRot));
+        if(state.tr.face != AttachFace.WALL) {
+            mtx.mulPose(Vector3f.XP.rotationDegrees(90f));
         }
+
+
+        float swingProgress = LocksClientUtil.lerp(lkb.maxSwingTicks - lkb.oldSwingTicks,
+                lkb.maxSwingTicks - lkb.swingTicks,
+                pt) / lkb.maxSwingTicks;
+
+
+        float swingAngle = (float) Math.pow(Math.sin(swingProgress * Math.PI * 2), 3) * 15f;
+
+
+        float dampingFactor = 1.0f - (swingProgress * 0.3f);
+        swingAngle *= dampingFactor;
+
+        mtx.mulPose(Vector3f.ZP.rotationDegrees(swingAngle));
 
         mtx.scale(0.5f, 0.5f, 0.5f);
 
